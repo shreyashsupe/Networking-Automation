@@ -1,0 +1,158 @@
+# IP address:  192.168.1.1/24
+-- The prefix is 24 which tells us that we can make 256 different IP address from this 
+
+
+# Private IP's:
+--> 10.0.0.0 - 10.255.255.255
+--> 172.16.0.0 - 172.31.255.255
+--> 192.168.0.0 - 192.168.255.255 
+
+
+# The number of IP address we can form (Total IPs)
+--> 2^(32-n)       (n is prefix)
+
+# Subnetmask:
+--> Subnetmask = 256 - Total ip
+
+
+# cisco real device 
+--> connect cisco device to computer using the console port on the device
+--> use putty for configuration
+--> mention the correct name of the device in putty from device manager on computer after connecting the device
+
+
+# Basic Cisco Commands:
+
+Router>         - user mode
+Router>?        - show commands you can use in user mode
+
+Router>enable   -command to enter privilege mode
+Router#         - privilege mode
+Router#?        - show commands you can use in privilege mode
+
+Router# configure terminal     - command to enter global configuration mode
+Router(config)#                - global configuration mode
+
+exit   --to exit any mode
+
+
+-- configure hostname
+Router(config)# hostname host_name       - configure hostname
+
+
+-- configure the password to enter the privilege mode
+Router(config)# enable password password
+
+(This enable password is not secure, we can secure it by using command 'service password-encryption' in configuration mode this will encrypt the password but it is very easy to decrypt)
+
+
+-- display the current active configuration (in privilege mode)
+Router# show running-config
+-- To use show running-config command in global configuration
+Router(config)# do show running-config     
+
+
+-- make password more secure
+Router(config)# enable secret password
+
+
+-- Remove configuration in cisco
+(to remove enable password just put 'no' in front of the command )
+Router(config)# no enable password     
+
+ 
+-- Configure the IP address on cisco router
+Router(config)# int fa0/0           (select the interface)
+Router(config-if)# no shutdown      (enable interface)
+Router(config-if)# ip address 192.168.1.1 255.255.255.0
+
+(done with the configuration the FastEthernet0/0 now do it for FastEthernet0/1)
+
+Router(config)# int fa0/1
+Router(config-if)# no shutdown
+Router(config-if)# ip address 192.168.2.1 255.255.255.0
+
+
+-- verify the configuration
+Router(config-if)# do show interface brief
+
+
+Router(config-if)# end   (to go to privilege mode directly)
+
+
+-- Restart the switch
+Router(config)# do reload
+
+-- save configuration 
+Router(config)# do write
+
+
+# VLAN and Trunking
+
+-- See Vlan details
+Switch# show vlan brief
+
+
+-- configure the VLAN
+Switch(config)# vlan 10
+Switch(config-vlan)# name Accounting
+Switch(config-vlan)# exit
+
+
+Switch(config)# vlan 20 
+Switch(config-vlan)# name Marketing
+Switch(config-vlan)# exit
+
+Switch(config)#show vlan brief
+
+-- assign the interface to vlan
+Switch(config)# interface fa0/2
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+Switch(config-if)# exit
+( fa0/2 interface is now assign to the Vlan 10)
+
+
+Switch(config)#interface fa0/4
+Switch(config-if)#switchport mode access
+Switch(config-if)#switchport access vlan 20 
+Switch(config-if)#exit
+(fa0/4 interface is now assign to the vlan 20)
+
+
+-- assign multiple interface to the vlan at once
+Switch(config)# interface range fa0/1-2
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+Switch(config-if)# exit
+
+
+-- remove ARP table from the pc
+C:/> arp -a    (check if there is any ARP table)
+C:/> arp -d    (delete the ARP table)
+
+
+-- check mac address table in switch
+Switch(config-if)# do show mac-address-table
+Switch(config-if)# do clear mac-address-table  (clear mac address table on switch)
+
+
+-- configure the trunk
+Switch(config-if)# interface fa0/5
+Switch(config-if)# switchport mode trunk
+(do this trunking on both switch connected by their interfaces)
+
+-- verify the trunk
+do show interface trunk
+
+
+ -- For multilayer switch we have to specify the trunk protocol while configuring
+switchport trunk encapsulation dot1q
+switchport mode trunk
+
+
+-- allowed trunk
+interface fa0/5
+switchport trunk allowed vlan 10,20
+switchport trunk allowed vlan add 30
+(This will allow only packet from vlan 10 and 20 to travel through trunk and then afterward if we want to allow vlan 30 to add to it we can do it like this as mention above.)

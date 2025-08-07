@@ -156,3 +156,171 @@ interface fa0/5
 switchport trunk allowed vlan 10,20
 switchport trunk allowed vlan add 30
 (This will allow only packet from vlan 10 and 20 to travel through trunk and then afterward if we want to allow vlan 30 to add to it we can do it like this as mention above.)
+
+
+
+-- Inter VLAN routing configuration
+Configure the router connecting any switch
+Router>enable
+Router# conf t
+Router(config)#int fa0/0
+Router(config-if)# no shutdown
+Router(config-if)#ip address 192.168.1.1 255.255.255.0    
+
+ip configuration done for vlan 1
+Now configure the ip address for vlan 10 for this we will have to create the sub interface
+
+Router(config-if)# int fa0/0.10
+Router(config-subif)#encapsulation dot1q 10
+Router(config-subif)#ip address 192.168.10.1 255.255.255.0
+
+Router(config-if)# int fa0/0.20
+Router(config-subif)#encapsulation dot1q 20   (determine that the interface is for vlan20)
+Router(config-subif)#ip address 192.168.20.1 255.255.255.0
+
+Router(config-if)# int fa0/0.30
+Router(config-subif)#encapsulation dot1q 30   (determine that the interface is for vlan30)
+Router(config-subif)#ip address 192.168.30.1 255.255.255.0
+
+
+Now configure the switch interface connected to router as trunk
+Switch>enable
+Switch# conf t
+Switch(config)# int fa0/8
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# do show interface trunk
+
+
+PC IPs configuration
+
+Room 1 
+VLAN 10 
+PC1 192.168.10.2   default gateway 192.168.10.1
+PC2 192.168.10.3   default gateway 192.168.10.1
+ 
+VLAN 20
+PC3 192.168.20.2   default gateway 192.168.20.1
+PC4 192.168.20.3   default gateway 192.168.20.1
+
+VLAN 30
+PC5 192.168.30.2   default gateway 192.168.30.1
+
+VLAN 1 
+PC6 192.168.1.2    default gateway 192.168.1.1
+
+(Do it same for the other pc in different room)
+
+
+
+-- Configure DHCP server in router
+configure the dhcp server in the router so that we don't have to configure the pc manually 
+
+->DHCP server configuration for VLAN 10:
+Router# conf t
+Router(config)# ip dhcp pool VLAN10   (Define a pool we can also use vlan name)
+Router(dhcp-config)# network 192.168.10.0 255.255.255.0  
+(Define the network 192.168.10.0 is network we are using for vlan 10)
+Router(dhcp-config)# default-router 192.168.10.1
+Router(dhcp-config)# dns-server 8.8.8.8
+Router(dhcp-config)#exit
+
+-> DHCP server configuration for vlan1:
+Router(config)# ip dhcp pool VLAN1
+Router(dhcp-config)# network 192.168.1.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.1.1
+Router(dhcp-config)#dsn-server 8.8.8.8
+Router(dhcp-config)# exit
+
+->DHCP server configuration for vlan20:
+Router(config)# ip dhcp pool VLAN20
+Router(dhcp-config)# network 192.168.20.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.20.1
+Router(dhcp-config)#dns-server 8.8.8.8
+Router(dhcp-config)# exit
+
+->DHCP serve configuration for VLAN30:
+Router(config)# ip dhcp pool VLAN30 
+Router(dhcp-config)# network 192.168.30.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.30.1
+Router(dhcp-config)# dns-server 8.8.8.8
+Router(dhcp-config)# exit
+
+
+
+
+-- Configure the SVI/ Switch virtual interface
+ 
+(Connecting between pc in different vlan using multi layer switch/ layer 3 switch 
+Here we dont have to use router to communicate between pc's in different vlan, we will simply use layer 3 switch)
+
+Configure SVI on the multi layer switch
+(In this case the default gateway will be the address of multilayer switch)
+
+->configure the ip address for vlan 1
+switch(config)# interface vlan1
+switch(config-if)# ip address 192.168.1.1 255.255.255.0
+switch(config-if)# exit
+
+->configure the ip address for vlan 10
+switch(config)# interface vlan10
+switch(config-if)# ip address 192.168.10.1 255.255.255.0
+switch(config-if)# exit
+
+->configure the ip address for vlan 20
+switch(config)# interface vlan20
+switch(config-if)# ip address 192.168.20.1 255.255.255.0
+switch(config-if)# exit
+
+->configure the ip address for vlan 30
+switch(config)# interface vlan1
+switch(config-if)# ip address 192.168.30.1 255.255.255.0
+switch(config-if)# exit
+
+switch(config)# do show ip interface brief
+
+*imp - if any vlan is administrative down then we have to use no shutdown in that vlan
+
+
+Configure the IP address on PC:
+(same as we done it manually in inter vlan)
+
+
+-> check if layer 3 function is enable on router or not 
+Switch# show ip route
+
+-> Active layer 3 function on multilayer switch
+Switch# conf t
+Switch(config)# ip routing     (Activate layer 3 function)
+Switch(config)# exit
+Switch# show ip route
+
+ 
+** configure DHCP server in multilayer switch
+
+-> DHCP configuration for VLAN 1
+Switch(config)# ip dhcp pool VLAN1
+Switch(dhcp-config)# network 192.168.1.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.1.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+-> DHCP configuration for VLAN 10
+Switch(config)# ip dhcp pool VLAN10
+Switch(dhcp-config)# network 192.168.10.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.10.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+-> DHCP configuration for VLAN 20
+Switch(config)# ip dhcp pool VLAN20
+Switch(dhcp-config)# network 192.168.20.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.20.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+-> DHCP configuration for VLAN 30
+Switch(config)# ip dhcp pool VLAN1
+Switch(dhcp-config)# network 192.168.30.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.30.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit

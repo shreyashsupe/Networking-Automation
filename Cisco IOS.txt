@@ -324,3 +324,42 @@ Switch(dhcp-config)# network 192.168.30.0 255.255.255.0
 Switch(dhcp-config)# default-router 192.168.30.1
 Switch(dhcp-config)# dns-serve 8.8.8.8
 Switch(dhcp-config)# exit
+
+
+
+------- Remote Access ------(Telnet and ssh)
+
+-- Configure telnet
+Router(config)# line vty 0 ?           (go to virtual terminal)
+This will show how many people can login at the same time
+
+Router(config)# line vty 0 2       (0-2 means 3 people can login at same time)
+Router(config-line)# password telnet 123
+Router(config-line)# login
+
+Router(config-line)# transport input telnet
+(all- can remote router using telnet and ssh both)
+(telnet- can remote router using telnet only)
+(ssh- can remote router using  ssh only)
+
+Router(config-line)# exit
+
+
+** on pc
+telnet/ssh clinet -> select the protocol(telent or ssh) and add the ip address of router -> connect
+
+
+** Telnet using username 
+Router(config)# username user1 secret pasword1
+Router(config)# line vty 0 2
+Router(config-line)# login local
+Router(config-line)# exit
+
+
+** Configure ssh on router
+Router(config)#hostname Core-Router
+Router(config)# ip domain-name agunacourse.com
+Core-Router(config)# crypto key generate rsa
+Core-Router(config)# line vty 0 2
+Core-Router(config-line)# transport input ssh
+Core-Router(config-line)# exit

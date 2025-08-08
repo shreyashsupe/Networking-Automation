@@ -4,7 +4,7 @@ import time
 
 # CPU usage threshold
 THRESHOLD = 80       
-INTERVAL = 60        # seconds
+CHECK_INTERVAL = 60        # seconds
 
 
 def send_alert(usage):
@@ -18,7 +18,7 @@ def send_alert(usage):
 
 
 def monitor_cpu():
-    print(f"Starting CPU monitoring .... \nThreshold = {THRESHOLD}% Interval = {INTERVAL} sec ")
+    print(f"Starting CPU monitoring .... \nThreshold = {THRESHOLD}% Interval = {CHECK_INTERVAL} sec ")
     try:
         while True:
             cpu_usage = psutil.cpu_percent(interval=1)     # measure CPU usage over 1 sec
@@ -29,8 +29,8 @@ def monitor_cpu():
                 send_alert(cpu_usage)
 
             # wait for remianing interval
-            if INTERVAL > 1:
-                time.sleep(INTERVAL - 1)
+            if CHECK_INTERVAL > 1:
+                time.sleep(CHECK_INTERVAL - 1)
             
 
     except KeyboardInterrupt:

@@ -1,0 +1,18 @@
+2025-08-10 11:04:19 - CPU monitoring started.
+2025-08-10 11:04:20 - CPU usage: 55.1%
+2025-08-10 11:05:20 - CPU usage: 42.2%
+2025-08-10 11:06:20 - CPU usage: 30.6%
+2025-08-10 11:07:20 - CPU usage: 14.0%
+2025-08-10 11:08:20 - CPU usage: 14.2%
+2025-08-10 11:09:20 - CPU usage: 13.5%
+2025-08-10 11:10:20 - CPU usage: 13.4%
+2025-08-10 11:10:34 - CPU monitoring stopped by user.
+2025-08-10 11:10:56 - CPU monitoring started.
+2025-08-10 11:10:57 - CPU usage: 16.1%
+2025-08-10 11:11:24 - CPU monitoring stopped by user.
+2025-08-10 11:12:52 - CPU monitoring started.
+2025-08-10 11:12:53 - CPU usage: 26.2%
+2025-08-10 11:12:53 - ALERT: CPU usage exceeded! CPU usage = 26.2%
+2025-08-10 11:13:09 - CPU usage: 15.5%
+2025-08-10 11:13:09 - ALERT: CPU usage exceeded! CPU usage = 15.5%
+2025-08-10 11:13:13 - CPU monitoring stopped by user.

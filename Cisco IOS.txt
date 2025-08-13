@@ -363,3 +363,41 @@ Core-Router(config)# crypto key generate rsa
 Core-Router(config)# line vty 0 2
 Core-Router(config-line)# transport input ssh
 Core-Router(config-line)# exit
+
+
+----VTP----
+
+Configure the VTP
+
+- We have 4 switches connected to each other and their connecting interface is configured as trunk. 
+- We have three mode in VTP name serve, transparent and client 
+- We will configure SW1 as client, SW2 as transparent, SW3 as client and SW4 as server
+- we can have multiple server VTP in a single topology
+
+
+--> configure VTP on SW1
+Switch(config)# vtp mode server
+Switch(config)# vtp domain AGUNACOURSE    -(domain main must be same on all switch)
+Switch(config)# vtp password 123          -(password must also be same) 
+
+--> configure VTP on SW2
+Switch(config)# vtp mode transparent
+Switch(config)# vtp domain AGUNACOURSE
+Switch(config)# vtp password 123
+
+-- configure VTP on SW3
+Switch(config)# vtp mode client 
+Switch(config)# vtp domain AUGANACOURSE
+Switch(config)# vtp password 123
+
+-- configure VTP on SW4
+Switch(config)# vtp mode server
+Switch(config)# vtp domain AUGANACOURSE
+Switch(config)# vtp password 123
+
+
+-- Testing VTP 
+-> Create VLAN on VTP serve
+Whatever the VLAN we will create on SW1 that is VTP serve those VLAN will also we get created for SW3(client) and SW4(server)
+--> In VTP client we cannot do modification, we cannot create and remove the vlan in VTP client.
+--> VTP transparent do not follow VTP server configurations or modifications

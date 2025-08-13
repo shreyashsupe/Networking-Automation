@@ -401,3 +401,38 @@ Switch(config)# vtp password 123
 Whatever the VLAN we will create on SW1 that is VTP serve those VLAN will also we get created for SW3(client) and SW4(server)
 --> In VTP client we cannot do modification, we cannot create and remove the vlan in VTP client.
 --> VTP transparent do not follow VTP server configurations or modifications
+
+
+
+
+---- Port Security-----
+
+--> configure port security on interface fa0/1 which is connected to server
+Switch(config)# int fa0/1      
+Switch(config-if)# do show fa0/1 switchport
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport port-security
+
+#now register the mac address of the server which is allowed to send packets
+Switch(config-if)# switchport pot-security mac-address 00E0.B09A.213A
+
+#only 1 server or pc is allowed to connect to this port 
+Switch(config-if)# switchport port-security maximum 1  
+
+#configure the violation
+Switch(config-if)# switchport port-security violation ?
+Switch(config-if)# switchport port-security violation shutdown 
+
+-- To see port-security status
+Switch(config)# do show port-security int fa0/1
+
+-- if the port is shutdown due to violation and we have to start it again, 'shutdown' it first and then use 'no shutdown' command 
+-->Switch(config-if)# shutdown
+-->Switch(config-if)# no shutdown 
+
+--> mac-address sticky - earlier we register the mac address manually, if we use mac-address sticky it will detect the first computer or server connected to the port
+Switch(config-if)# switchport pot-security mac-address sticky
+
+
+--> There are three violation mode that we have to configure 
+1. shutdown 2. protect 3. restrict

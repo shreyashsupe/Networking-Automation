@@ -436,3 +436,89 @@ Switch(config-if)# switchport pot-security mac-address sticky
 
 --> There are three violation mode that we have to configure 
 1. shutdown 2. protect 3. restrict
+
+
+
+
+----- Etherchannel -----
+
+Combines 2 or more physical links into one logical link.
+Common protocols: PAgP (Cisco proprietary) and LACP (IEEE 802.3ad standard) and 
+
+
+
+--- LACP ---
+--> Configure ethercahnnel on SW0:
+
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group ?
+Switch(config-if-range)# channel-group 1 ?
+Switch(config-if-range)# channel-group 1 mode ?
+Switch(config-if-range)# channel-group 1 mode active
+
+--> Configure etherchannel on SW1:
+
+Switch(config)# interface rangefa0/1-0/3
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group 1 mode passive 
+
+NOte: - one active one passive ertherchannel is up 
+      - both active etherchannel is also up 
+      - both passive etherchannel is not up
+
+
+
+Switch(config-if-range)# do show etherchannel summary
+
+
+--- PAGP ----
+ 
+Note: - one desirable and one auto etherchanne up
+      - Both desirable etherchannel is up
+      - Both auto etherchannel is not up
+
+-->configure EtherChannel on SW1
+
+Switch(config)# interface range fa0/5-0/7
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group ?
+Switch(config-if-range)# channel-group 2 mode ?
+Switch(config-if-range)# channel-group 2 mode desirable
+
+--> configure EtherChannel on SW2(multilayer switch)
+
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# switchport trunk encapsulation dot1q
+Switch(config-if-range)# switchport mode trunk 
+Switch(config-if-range)# channel-group 2 mode auto
+
+
+Switch(config-if-range)# do show etherchannel summary
+
+
+
+---- EtherChannel layer 3 ------
+
+Works on layer 3 switches only. Lets see we have two layer 3 switches connected 
+
+SW1:
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# no switchport
+Switch(config-if-range)# channel-group 1 mode ?
+Switch(config-if-range)# channel-group 1 mode on
+Switch(config-if-range)# int po1
+Switch(config-if)# ip address 10.10.10.1 255.255.255.0
+
+SW2:
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# no switchport 
+Switch(config-if-range)# channel-group 1 mode ?
+Switch(config-if-range)# channel-group 1 mode on
+Switch(config-if-range)# int po1
+Switch(config-if)# ip address 10.10.10.2 255.255.255.0
+
+ 
+Switch(config-if)# do show etherchannel summary
+
+

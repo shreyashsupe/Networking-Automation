@@ -522,3 +522,172 @@ Switch(config-if)# ip address 10.10.10.2 255.255.255.0
 Switch(config-if)# do show etherchannel summary
 
 
+
+
+------ Static Routing -------
+
+-->Routing: Communication between computer in different block subnet
+
+--> Static routing is when you manually configure routes on routers to tell them how to reach different networks.
+
+
+
+--> Scenario: Two Routers and Two PCs
+
+Imagine:
+
+PC1 is on network 192.168.1.0/24
+IP: 192.168.1.10
+Default Gateway: 192.168.1.1 (Router1’s interface IP)
+
+PC2 is on network 192.168.3.0/24
+IP: 192.168.3.10
+Default Gateway: 192.168.3.1 (Router2’s interface IP)
+
+Router1 connects PC1's network and Router2.
+Interfaces:
+-- 192.168.1.1/24 (connected to PC1’s network)
+-- 10.0.0.1/30 (connected to Router2)
+
+Router2 connects PC2's network and Router1.
+Interfaces:
+-- 192.168.3.1/24 (connected to PC2’s network)
+-- 10.0.0.2/30 (connected to Router1) 
+
+
+Step 1: Configure IP addresses on routers 
+
+--> Router 1-
+
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+
+--> Router 2
+
+interface GigabitEthernet0/0
+ ip address 192.168.3.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+
+
+Step 2: Configure the static routes
+
+-->Router 1
+ip route 192.168.3.0 255.255.255.0 10.0.0.2
+
+--> Router 2
+ip route 192.168.1.0 255.255.255.0 10.0.0.1
+
+
+Step 3: Configure the PCs
+
+-- PC1 default gateway: 192.168.1.1
+-- PC2 default gateway: 192.168.3.1
+
+
+--> How it works:
+
+- When PC1 sends a packet to PC2 (192.168.3.10), it sends it to Router1 (192.168.1.1).
+
+- Router1 looks up its routing table, finds the route for 192.168.3.0/24 via 10.0.0.2 and forwards the packet.
+
+- Router2 receives it on 10.0.0.2, forwards it to PC2 (192.168.3.10).
+
+- The reply goes back the same way.
+
+
+-- to check the routing 
+do show ip route
+
+
+
+---- Configuring static routing with 3 routers and 3 PCs ---
+
+Device	Interface	IP Address	Subnet
+PC1	NIC	192.168.1.10	255.255.255.0
+Router1	LAN to PC1	192.168.1.1	255.255.255.0
+Router1	WAN to Router2	10.0.0.1	255.255.255.252
+
+| PC2 | NIC | 192.168.2.10 | 255.255.255.0 |
+| Router2 | LAN to PC2 | 192.168.2.1 | 255.255.255.0 |
+| Router2 | WAN to Router1 | 10.0.0.2 | 255.255.255.252|
+| Router2 | WAN to Router3 | 10.0.0.5 | 255.255.255.252|
+
+| PC3 | NIC | 192.168.3.10 | 255.255.255.0 |
+| Router3 | LAN to PC3 | 192.168.3.1 | 255.255.255.0 |
+| Router3 | WAN to Router2 | 10.0.0.6 | 255.255.255.252|
+
+
+Step 1: Configure PCs
+
+--> Set IP addresses and default gateways:
+
+PC1:
+IP: 192.168.1.10
+GW: 192.168.1.1
+
+PC2:
+IP: 192.168.2.10
+GW: 192.168.2.1
+
+PC3:
+IP: 192.168.3.10
+GW: 192.168.3.1
+
+
+Step 2: Configures Routers
+
+--> Router 1
+
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+
+ip route 192.168.2.0 255.255.255.0 10.0.0.2
+ip route 192.168.3.0 255.255.255.0 10.0.0.2
+
+
+--> Router 2
+
+interface GigabitEthernet0/0
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+
+interface GigabitEthernet0/2
+ ip address 10.0.0.5 255.255.255.252
+ no shutdown
+
+ip route 192.168.1.0 255.255.255.0 10.0.0.1
+ip route 192.168.3.0 255.255.255.0 10.0.0.6
+
+
+--> Router 3
+
+interface GigabitEthernet0/0
+ ip address 192.168.3.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.6 255.255.255.252
+ no shutdown
+
+ip route 192.168.1.0 255.255.255.0 10.0.0.5
+ip route 192.168.2.0 255.255.255.0 10.0.0.5
+
+-->  Verify Connectivity by ping IP addresses of PCs

@@ -826,3 +826,68 @@ Default gateway - 192.168.3.1
 show ip route
 show ip eigrp neighbors
 show ip protocols
+
+
+
+----------- Dynamic Routing OSPF ---------
+
+
+---- For 2 routers and 2 PCs topology------
+PC1	NIC	192.168.1.2	255.255.255.0
+R1	f0/0	192.168.1.1	255.255.255.0
+R1	f0/1	10.10.10.1	255.255.255.0
+R2	f0/1	10.10.10.2	255.255.255.0
+R2	f0/0	192.168.2.1	255.255.255.0
+PC2	NIC	192.168.2.2	255.255.255.0
+
+Router 1:
+
+	interface f0/0
+ 	ip address 192.168.1.1 255.255.255.0
+ 	no shutdown
+
+	interface GigabitEthernet0/1
+ 	ip address 10.10.10.1 255.255.255.252
+ 	no shutdown
+
+	router ospf 1
+ 	network 192.168.1.0 0.0.0.255 area 0
+ 	network 10.10.10.0 0.0.0.255 area 0
+
+
+Router 2:
+
+	interface f0/0
+ 	ip address 192.168.2.1 255.255.255.0
+ 	no shutdown
+
+	interface f0/1
+ 	ip address 10.10.10.2 255.255.255.252
+ 	no shutdown
+
+	router ospf 1
+ 	network 192.168.2.0 0.0.0.255 area 0
+ 	network 10.10.10.0 0.0.0.255 area 0
+
+
+PC1: 
+IP 192.168.1.2
+Subnet 255.255.255.0,
+Gateway 192.168.1.1
+
+PC2: 
+IP 192.168.2.2 
+Subnet 255.255.255.0 
+Gateway 192.168.2.1
+
+
+-- Verification commands on routers
+	show ip ospf neighbor
+	show ip route ospf
+	show ip protocols
+
+
+---- For 3 routers and 3 PCs topology ----
+
+-- Same we did for eigrp, we will be introducing new network in router 2 so we have to advertised them after that we will have to configure the router 3 and pc 3 and advertise the nentworks in router 3. (Use the same IP address scheme used in EIGRP configuration.)
+

@@ -820,3 +820,9 @@ PC 3:
 IP address - 198.162.3.2
 Subnet mask - 255.255.255.0
 Default gateway - 192.168.3.1
+
+
+-- Verification (on all routers)
+show ip route
+show ip eigrp neighbors
+show ip protocols

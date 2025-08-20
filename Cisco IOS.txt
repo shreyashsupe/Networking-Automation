@@ -944,8 +944,8 @@ Router 2:
 	router bgp 65002
  	neighbor 10.10.10.1 remote-as 65001
 
- 	network 192.168.2.0 mask 255.255.255.0
-
+ 	network 192.168.2.0 mask 255.255.255.0    # advertise the networks
+    network 192.20.20.0 mask 255.255.255.0
 
 PC Configurations:
 
@@ -998,6 +998,8 @@ Verification:
  	neighbor 10.20.20.1 remote-as 65002
 
  	network 192.168.3.0 mask 255.255.255.0
+	network 192.20.20.0 mask 255.255.255.0
+
 
 PC3: 
 IP 192.168.3.2, 

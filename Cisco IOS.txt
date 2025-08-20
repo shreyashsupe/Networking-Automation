@@ -691,3 +691,132 @@ ip route 192.168.1.0 255.255.255.0 10.0.0.5
 ip route 192.168.2.0 255.255.255.0 10.0.0.5
 
 -->  Verify Connectivity by ping IP addresses of PCs
+
+
+
+
+-------------- Dynamic Routing EIGRP ---------------
+
+-- EIGRP stands for Enhanced Interior Gateway Routing Protocol.
+
+-- Dynamic routing is a method where routers automatically learn and share routes with each other. Routers use routing protocols to exchange information about network topology.
+
+-- How EIGRP Works (Simplified):
+⦁	Neighbor Discovery: Routers discover adjacent routers running EIGRP.
+⦁	Exchange Routing Information: Share routes using reliable transport.
+⦁	Calculate Best Paths: Use metrics based on bandwidth, delay, load, reliability.
+⦁	Maintain Routing Table: Update dynamically as the network changes.
+
+
+---- Dynamic Routing in 2 router topology ----
+
+
+Device	Interface	IP Address	Subnet Mask
+PC1	NIC	192.168.1.2	255.255.255.0
+R1	f0/0	192.168.1.1	255.255.255.0
+R1	f0/1	10.10.10.1	255.255.255.0
+R2	f0/1	10.10.10.2	255.255.255.0
+R2	f0/0	192.168.2.1	255.255.255.0
+PC2	NIC	192.168.2.2	255.255.255.0
+
+Step 1: Set IPs on PCs
+
+--> PC1: 
+	IP Address: 192.168.1.2
+	Subnet Mask: 255.255.255.0
+	Default Gateway: 192.168.1.1
+
+--> PC2:
+	IP Address: 192.168.2.2
+	Subnet Mask: 255.255.255.0
+	Default Gateway: 192.168.2.1
+
+
+Step 2: Router configurations
+
+--> Router 1:
+	enable
+	configure terminal
+
+	interface f0/0
+	no shutdown
+	ip address 192.168.1.1 255.255.255.0
+	
+	interface f0/1
+	no shutdown 
+	ip address 10.10.10.1 255.255.255.0
+
+	router eigrp ?
+
+note: EIGRP Autonomous System (AS) number must be the same on both routers. Here we use 10.
+	router eigrp 10     
+	network 10.10.10.0     # ADVERTISE CONNECTED NETWORKS
+	network 192.168.1.0
+
+
+--> Router 2:
+ 	enable
+ 	configure terminal
+
+ 	interface f0/0
+ 	no shutdown
+ 	ip address 192.168.2.1 255.255.255.0
+ 
+ 	interface f0/1
+ 	no shutdown
+ 	ip address 10.10.10.2 255.255.255.0
+
+ 	router eigrp ?
+ 	router eigrp 10
+ 	network 10.10.10.0
+ 	network 192.168.2.0
+
+
+do show ip eigrp neighbor    -- verify eigrp 
+do ip route 		     -- check routing table
+
+
+
+---- Dynamic Routing in 3 router topology ----
+
+IP address scheme:
+
+PC1 (to R1)	192.168.1.2	255.255.255.0
+R1 (to PC1)	192.168.1.1	255.255.255.0
+R1 (to R2)	10.10.10.1	255.255.255.0
+R2 (to R1)	10.10.10.2	255.255.255.0
+R2 (to PC2)	192.168.2.1	255.255.255.0
+PC2 (to R2)	192.168.2.2	255.255.255.0
+R2 (to R3)	10.20.20.1	255.255.255.0
+R3 (to R2)	10.20.20.2	255.255.255.0
+R3 (to PC3)	192.168.3.1	255.255.255.0
+PC3 (to R3)	192.168.3.2	255.255.255.0
+
+Note: We have already configure R1 and R2 eigrp in above configuration, but we have introduce new network in router 2 so we have to advertise them and we still have to configure router 3 eigrp and advertise the network, no need to configure the router 1 eigrp cause we did not introduce any new network in it
+
+ --> Advertise router 2 new network 
+router eigrp 10
+network 10.20.20.1
+
+--> Configure and advertise router 3 networks:
+	enable
+ 	configure terminal
+
+ 	interface f0/0
+ 	no shutdown
+ 	ip address 192.168.3.1 255.255.255.0
+ 
+ 	interface f0/1
+ 	no shutdown
+ 	ip address 10.20.20.2 255.255.255.0
+
+ 	router eigrp ?
+ 	router eigrp 10
+ 	network 10.20.20.0
+ 	network 192.168.3.0
+
+
+PC 3: 
+IP address - 198.162.3.2
+Subnet mask - 255.255.255.0
+Default gateway - 192.168.3.1

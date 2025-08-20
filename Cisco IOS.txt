@@ -891,3 +891,116 @@ Gateway 192.168.2.1
 
 -- Same we did for eigrp, we will be introducing new network in router 2 so we have to advertised them after that we will have to configure the router 3 and pc 3 and advertise the nentworks in router 3. (Use the same IP address scheme used in EIGRP configuration.)
 
+
+
+
+---------- Dynamic Routing BGP -------------
+
+
+--- For 2 routers and 2 PCs ---
+
+| Device      | Interface | IP Address  | Subnet Mask     |
+| ----------- | --------- | ----------- | --------------- |
+| PC1         | NIC       | 192.168.1.2 | 255.255.255.0   |
+| R1 (to PC1) | f0/0      | 192.168.1.1 | 255.255.255.0   |
+| R1 (to R2)  | f0/1      | 10.10.10.1  | 255.255.255.0   |
+| R2 (to R1)  | f0/1      | 10.10.10.2  | 255.255.255.0   |
+| R2 (to PC2) | f0/0      | 192.168.2.1 | 255.255.255.0   |
+| PC2         | NIC       | 192.168.2.2 | 255.255.255.0   |
+
+Assume AS numbers:
+R1 : As 65001
+R2 : AS 65002
+
+Router 1: 
+
+	enable
+	configure terminal
+
+	interface f0/0
+ 	ip address 192.168.1.1 255.255.255.0
+ 	no shutdown
+
+	interface f/1
+ 	ip address 10.10.10.1 255.255.255.0
+ 	no shutdown
+
+	router bgp 65001
+ 	neighbor 10.10.10.2 remote-as 65002
+
+ 	network 192.168.1.0 mask 255.255.255.0
+
+
+Router 2:
+
+	interface f0/0
+ 	ip address 192.168.2.1 255.255.255.0
+ 	no shutdown
+
+	interface f0/1
+ 	ip address 10.10.10.2 255.255.255.0
+ 	no shutdown
+
+	router bgp 65002
+ 	neighbor 10.10.10.1 remote-as 65001
+
+ 	network 192.168.2.0 mask 255.255.255.0
+
+
+PC Configurations:
+
+PC1: 
+IP 192.168.1.2, 
+subnet 255.255.255.0, 
+gateway 192.168.1.1
+
+PC2: 
+IP 192.168.2.2, 
+subnet 255.255.255.0, 
+gateway 192.168.2.1
+
+
+Verification:
+	show ip bgp summary
+	show ip bgp
+	show ip route bgp
+
+
+--- for 3 routers and 3 PCs topology ---
+
+| Device      | Interface | IP Address  | Subnet Mask   |
+| ----------- | --------- | ----------- | ------------- |
+| PC1         | -         | 192.168.1.2 | 255.255.255.0 |
+| R1 (to PC1) | Gi0/0     | 192.168.1.1 | 255.255.255.0 |
+| R1 (to R2)  | Gi0/1     | 10.10.10.1  | 255.255.255.0 |
+| R2 (to R1)  | Gi0/1     | 10.10.10.2  | 255.255.255.0 |
+| R2 (to PC2) | Gi0/0     | 192.168.2.1 | 255.255.255.0 |
+| PC2         | -         | 192.168.2.2 | 255.255.255.0 |
+| R2 (to R3)  | Gi0/2     | 10.20.20.1  | 255.255.255.0 |
+| R3 (to R2)  | Gi0/1     | 10.20.20.2  | 255.255.255.0 |
+| R3 (to PC3) | Gi0/0     | 192.168.3.1 | 255.255.255.0 |
+| PC3         | -         | 192.168.3.2 | 255.255.255.0 |
+
+⦁	We have already configure bgp for router 1
+⦁	Introduce new network in router 2 so we have to configure bgp
+	router bgp 65002
+	neighbour 10.20.20.2 remote-as 65003
+⦁	Router 3 we have added so we have to configure it 
+	interface f0/0
+ 	ip address 192.168.3.1 255.255.255.0
+ 	no shutdown
+
+	interface f0/1
+ 	ip address 10.20.20.2 255.255.255.0
+ 	no shutdown
+
+	router bgp 65003
+ 	neighbor 10.20.20.1 remote-as 65002
+
+ 	network 192.168.3.0 mask 255.255.255.0
+
+PC3: 
+IP 192.168.3.2, 
+mask 255.255.255.0, 
+gateway 192.168.3.1
+

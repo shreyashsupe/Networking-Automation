@@ -1087,3 +1087,49 @@ Router(config-std-nacl)# do show access list
 # Now assign the access list to the interface 
 Router(config-std-nacl)# int fa0/0
 Router(config-if)# ip access-group PermitVLAN30 out
+
+
+
+---------- Extended Access List ---------
+
+--> An Extended Access Control List (Extended ACL) is a more powerful and flexible type of ACL used in networking.
+It allows you to filter traffic based on multiple parameters, not just the source IP.
+
+--> Extended ACL Filters Based On:
+
+⦁	Source IP address
+⦁	Destination IP address
+⦁	Protocol type (TCP, UDP, ICMP, etc.)
+⦁	Port numbers (e.g., HTTP, FTP, SSH)
+⦁	Source and destination ports.
+
+1.	Block all http to all servers
+
+Router(config)# access-list ?
+Router(config)# access-list 100 deny tcp any 192.168.1.0 0.0.0.255 ?  
+Router(config)# access-list 100 deny tcp any 192.168.1.0 0.0.0.255 eq 80 
+
+(access-list 100 deny tcp any 192.168.1.0 0.0.0.255 eq 80)
+(access-list 100 deny protocol any destination-server eq  port-of-http)
+
+2. All VLAN is allowed to access Server1
+
+Router(config)# access-list 100 permit ?
+Router(config)# access-list 100 permit ip ?
+Router(config)# access list 100 permit ip any ?
+Router(config)# access list 100 permit ip any host 192.168.1.10
+
+3. Only VLAN 20 can access Server2
+
+Router(config)#  access-list 100 permit ip 192.168.20.0 0.0.0.255(source) host 192.168.1.20(destination)
+
+4. only VLAN 30 can access server3
+
+Router(config)# access-list 100 permit ip 192.168.30.0 0.0.0.255 host 192.168.1.30
+
+
+Router(config)# do show access list 
+
+-- Assign access list to interface 
+Router(config)# int fa0/1
+Router(config-if)# ip access-group 100 out

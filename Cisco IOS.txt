@@ -1006,3 +1006,84 @@ IP 192.168.3.2,
 mask 255.255.255.0, 
 gateway 192.168.3.1
 
+
+
+
+------------- Standard Access List ---------- (imp for practical)
+
+An Access Control List (ACL) is a set of rules used in networking (especially in routers and firewalls) to control and filter network traffic. It defines which packets are allowed or denied based on criteria like IP addresses, protocols, or ports.
+
+--> Standard Access List:
+
+A Standard Access Control List filters traffic only based on the source IP address.
+It does not check the destination IP, protocol, or port number.
+
+⦁	Uses numbers 1–99 (or 1300–1999 for expanded range).
+
+⦁	Can only permit or deny traffic based on the source IP address.
+
+⦁	Applied close to the destination (since it lacks granularity).
+
+
+--> Wildcard Mask 
+
+Standard ACLs use a wildcard mask to match IP addresses:
+
+| Wildcard Mask     | Means                                             |
+| ----------------- | ------------------------------------------------- |
+| `0.0.0.0`         | Exact match                                       |
+| `0.0.0.255`       | Match a range (e.g., 192.168.1.0 – 192.168.1.255) |
+| `255.255.255.255` | Match all IPs                                     |
+
+
+Configuration:
+
+Router(config)# access-list?
+Router(config)# access-list 1 ?
+Router(config)# access-list 1 deny?
+Router(config)# access-list 1 deny host 192.168.20.2   # will block this pc only
+
+# block any network or VLAN 
+Router(config)# access-list 1 deny 192.168.20.0 0.0.0.255
+
+Router(config)# do show access-list
+
+-- now vlan 20 is block we have to now permit rest of the vlan 
+Router(config)# access-list 1 permit any 
+
+-- now if we check acces-list (do show access-list) we will see two rules in access-list 1
+
+-- now assign the access-list to router interface (either in or out)
+Router(config)# int f0/0
+Router(config-if)# ip access-group 1 ?
+Router(config-if)# ip access-group 1 out
+
+
+---  remove access-group
+Router(config)# int fa0/0
+Router(config-if)# no ip access-group 1 out
+
+
+## See running configurations 
+---->Router(config)# show run 
+
+
+-- Sequence number in Access list
+Router will read the access rule according to the sequence
+
+Router(config)# ip access-list standard 1 -- go to access list
+Router(config-std-nac1)# no 30     -- remove rule with sequence number 30
+
+Router(config-std-nac1)# 15 deny host 192.168.10.2  -- add rule with sequence no. 15
+
+
+-- configure named access-list(use name instead of access id)
+
+Router(config)# ip access-list standard PermitVLAN30
+Router(config)# ?
+Router(config-std-nacl)# permit 192.168.30.0 0.0.0.255
+Router(config-std-nacl)# do show access list
+
+# Now assign the access list to the interface 
+Router(config-std-nacl)# int fa0/0
+Router(config-if)# ip access-group PermitVLAN30 out

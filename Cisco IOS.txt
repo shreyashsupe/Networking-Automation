@@ -1133,3 +1133,51 @@ Router(config)# do show access list
 -- Assign access list to interface 
 Router(config)# int fa0/1
 Router(config-if)# ip access-group 100 out
+
+
+
+
+--------------- Network Address Translation -----------------
+
+--> Network Address Translation (NAT) is a technique used in networking to translate private IP addresses to a public IP address (and vice versa) so that devices on a private network can communicate with external networks like the internet.
+
+--> How NAT Works:
+
+1.	Your device (e.g., 192.168.1.10) sends a request to a website.
+2.	The NAT-enabled router replaces the private IP with its public IP (e.g., 203.0.113.5).
+3.	The website responds to the public IP.
+4.	The router receives the response, translates the public IP back to your private IP, and delivers the data to your device.
+
+
+--> Types of NAT: 
+
+⦁	Static NAT:
+	One private IP is mapped to one public IP (1:1 mapping).
+
+⦁	Dynamic NAT
+	Private IPs are mapped to a pool of public IPs, assigned as available.
+
+⦁	PAT (Port Address Translation)
+	Many private IPs share one public IP, but use different ports. Also called 	NAT Overload. Most common in home routers.
+
+
+Configure the default route:
+-- on costumer router where the next hop is ISP
+Router(config)# Ip route 0.0.0.0 0.0.0.0 10.20.20.1 
+
+
+Configure NAT on customer router (eg. home router)
+
+Router(config)# access-list 1 permit 192.168.10.0 0.0.0.255   #VLAN10
+Router(config)# access-list 1 permit 192.168.20.0 0.0.0.255   #VLAN20
+
+Router(config)# ip nat inside source list 1 interface fa0/0 overload
+
+Router(config)# Int fa0/0 
+Router(config-if)# ip nat outside    # from route to ISP
+
+Router(config-if)# int fa0/1.10 
+Router(config-if)# ip nat inside
+
+Router(config-if)# int fa0/1.20
+Router(config-if)# ip nat inside

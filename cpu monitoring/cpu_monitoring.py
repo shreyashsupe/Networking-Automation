@@ -1,5 +1,5 @@
 import psutil
-from plyer import notification
+from plyer import notification # type: ignore
 import time
 import logging
 from datetime import datetime

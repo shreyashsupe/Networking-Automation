@@ -1,0 +1,1190 @@
+# IP address:  192.168.1.1/24
+-- The prefix is 24 which tells us that we can make 256 different IP address from this
+
+
+# Private IP's:
+--> 10.0.0.0 - 10.255.255.255
+--> 172.16.0.0 - 172.31.255.255
+--> 192.168.0.0 - 192.168.255.255
+
+
+# The number of IP address we can form (Total IPs)
+--> 2^(32-n)       (n is prefix)
+
+# Subnetmask:
+--> Subnetmask = 256 - Total ip
+
+
+# cisco real device
+--> connect cisco device to computer using the console port on the device
+--> use putty for configuration
+--> mention the correct name of the device in putty from device manager on computer after connecting the device
+
+
+# Basic Cisco Commands:
+
+Router>         - user mode
+Router>?        - show commands you can use in user mode
+
+Router>enable   -command to enter privilege mode
+Router#         - privilege mode
+Router#?        - show commands you can use in privilege mode
+
+Router# configure terminal     - command to enter global configuration mode
+Router(config)#                - global configuration mode
+
+exit   --to exit any mode
+
+
+-- configure hostname
+Router(config)# hostname host_name       - configure hostname
+
+
+-- configure the password to enter the privilege mode
+Router(config)# enable password password
+
+(This enable password is not secure, we can secure it by using command 'service password-encryption' in configuration mode this will encrypt the password but it is very easy to decrypt)
+
+
+-- display the current active configuration (in privilege mode)
+Router# show running-config
+-- To use show running-config command in global configuration
+Router(config)# do show running-config
+
+
+-- make password more secure
+Router(config)# enable secret password
+
+
+-- Remove configuration in cisco
+(to remove enable password just put 'no' in front of the command )
+Router(config)# no enable password
+
+ 
+-- Configure the IP address on cisco router
+Router(config)# int fa0/0           (select the interface)
+Router(config-if)# no shutdown      (enable interface)
+Router(config-if)# ip address 192.168.1.1 255.255.255.0
+
+(done with the configuration the FastEthernet0/0 now do it for FastEthernet0/1)
+
+Router(config)# int fa0/1
+Router(config-if)# no shutdown
+Router(config-if)# ip address 192.168.2.1 255.255.255.0
+
+
+-- verify the configuration
+Router(config-if)# do show interface brief
+
+
+Router(config-if)# end   (to go to privilege mode directly)
+
+
+-- Restart the switch
+Router(config)# do reload
+
+-- save configuration
+Router(config)# do write
+
+
+
+# VLAN and Trunking
+
+-- See Vlan details
+Switch# show vlan brief
+
+
+-- configure the VLAN
+Switch(config)# vlan 10
+Switch(config-vlan)# name Accounting
+Switch(config-vlan)# exit
+
+
+Switch(config)# vlan 20
+Switch(config-vlan)# name Marketing
+Switch(config-vlan)# exit
+
+Switch(config)#show vlan brief
+
+-- assign the interface to vlan
+Switch(config)# interface fa0/2
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+Switch(config-if)# exit
+( fa0/2 interface is now assign to the Vlan 10)
+
+
+Switch(config)#interface fa0/4
+Switch(config-if)#switchport mode access
+Switch(config-if)#switchport access vlan 20
+Switch(config-if)#exit
+(fa0/4 interface is now assign to the vlan 20)
+
+
+-- assign multiple interface to the vlan at once
+Switch(config)# interface range fa0/1-2
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+Switch(config-if)# exit
+
+
+
+
+-- remove ARP table from the pc
+C:/> arp -a    (check if there is any ARP table)
+C:/> arp -d    (delete the ARP table)
+
+
+-- check mac address table in switch
+Switch(config-if)# do show mac-address-table
+Switch(config-if)# do clear mac-address-table  (clear mac address table on switch)
+
+
+-- configure the trunk
+Switch(config-if)# interface fa0/5
+Switch(config-if)# switchport mode trunk
+(do this trunking on both switch connected by their interfaces)
+
+-- verify the trunk
+do show interface trunk
+
+
+ -- For multilayer switch we have to specify the trunk protocol while configuring
+switchport trunk encapsulation dot1q
+switchport mode trunk
+
+
+-- allowed trunk
+interface fa0/5
+switchport trunk allowed vlan 10,20
+switchport trunk allowed vlan add 30
+(This will allow only packet from vlan 10 and 20 to travel through trunk and then afterward if we want to allow vlan 30 to add to it we can do it like this as mention above.)
+
+
+
+
+-- Inter VLAN routing configuration
+Configure the router connecting any switch
+Router>enable
+Router# conf t
+Router(config)#int fa0/0
+Router(config-if)# no shutdown
+Router(config-if)#ip address 192.168.1.1 255.255.255.0
+
+ip configuration done for vlan 1
+Now configure the ip address for vlan 10 for this we will have to create the sub interface
+
+Router(config-if)# int fa0/0.10
+Router(config-subif)#encapsulation dot1q 10
+Router(config-subif)#ip address 192.168.10.1 255.255.255.0
+
+Router(config-if)# int fa0/0.20
+Router(config-subif)#encapsulation dot1q 20   (determine that the interface is for vlan20)
+Router(config-subif)#ip address 192.168.20.1 255.255.255.0
+
+Router(config-if)# int fa0/0.30
+Router(config-subif)#encapsulation dot1q 30   (determine that the interface is for vlan30)
+Router(config-subif)#ip address 192.168.30.1 255.255.255.0
+
+
+Now configure the switch interface connected to router as trunk
+Switch>enable
+Switch# conf t
+Switch(config)# int fa0/8
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# do show interface trunk
+
+
+PC IPs configuration
+
+Room 1
+VLAN 10
+PC1 192.168.10.2   default gateway 192.168.10.1
+PC2 192.168.10.3   default gateway 192.168.10.1
+ 
+VLAN 20
+PC3 192.168.20.2   default gateway 192.168.20.1
+PC4 192.168.20.3   default gateway 192.168.20.1
+
+VLAN 30
+PC5 192.168.30.2   default gateway 192.168.30.1
+
+VLAN 1
+PC6 192.168.1.2    default gateway 192.168.1.1
+
+(Do it same for the other pc in different room)
+
+
+
+-- Configure DHCP server in router
+configure the dhcp server in the router so that we don't have to configure the pc manually
+
+->DHCP server configuration for VLAN 10:
+Router# conf t
+Router(config)# ip dhcp pool VLAN10   (Define a pool we can also use vlan name)
+Router(dhcp-config)# network 192.168.10.0 255.255.255.0
+(Define the network 192.168.10.0 is network we are using for vlan 10)
+Router(dhcp-config)# default-router 192.168.10.1
+Router(dhcp-config)# dns-server 8.8.8.8
+Router(dhcp-config)#exit
+
+-> DHCP server configuration for vlan1:
+Router(config)# ip dhcp pool VLAN1
+Router(dhcp-config)# network 192.168.1.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.1.1
+Router(dhcp-config)#dsn-server 8.8.8.8
+Router(dhcp-config)# exit
+
+->DHCP server configuration for vlan20:
+Router(config)# ip dhcp pool VLAN20
+Router(dhcp-config)# network 192.168.20.0 255.255.255.0
+Router(dhcp-config)# default-router 192.168.20.1
+Router(dhcp-config)#dns-server 8.8.8.8
+Router(dhcp-config)# exit
+
+->DHCP serve configuration for VLAN30:
+Router(config)# ip dhcp pool VLAN30
+Router(dhcp-config)# network 192.168.30.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.30.1
+Router(dhcp-config)# dns-server 8.8.8.8
+Router(dhcp-config)# exit
+
+
+
+
+-- Configure the SVI/ Switch virtual interface
+ 
+(Connecting between pc in different vlan using multi layer switch/ layer 3 switch
+Here we dont have to use router to communicate between pc's in different vlan, we will simply use layer 3 switch)
+
+Configure SVI on the multi layer switch
+(In this case the default gateway will be the address of multilayer switch)
+
+->configure the ip address for vlan 1
+switch(config)# interface vlan1
+switch(config-if)# ip address 192.168.1.1 255.255.255.0
+switch(config-if)# exit
+
+->configure the ip address for vlan 10
+switch(config)# interface vlan10
+switch(config-if)# ip address 192.168.10.1 255.255.255.0
+switch(config-if)# exit
+
+->configure the ip address for vlan 20
+switch(config)# interface vlan20
+switch(config-if)# ip address 192.168.20.1 255.255.255.0
+switch(config-if)# exit
+
+->configure the ip address for vlan 30
+switch(config)# interface vlan1
+switch(config-if)# ip address 192.168.30.1 255.255.255.0
+switch(config-if)# exit
+
+switch(config)# do show ip interface brief
+
+*imp - if any vlan is administrative down then we have to use no shutdown in that vlan
+
+
+Configure the IP address on PC:
+(same as we done it manually in inter vlan)
+
+
+-> check if layer 3 function is enable on router or not
+Switch# show ip route
+
+-> Active layer 3 function on multilayer switch
+Switch# conf t
+Switch(config)# ip routing     (Activate layer 3 function)
+Switch(config)# exit
+Switch# show ip route
+
+ 
+** configure DHCP server in multilayer switch
+
+-> DHCP configuration for VLAN 1
+Switch(config)# ip dhcp pool VLAN1
+Switch(dhcp-config)# network 192.168.1.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.1.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+-> DHCP configuration for VLAN 10
+Switch(config)# ip dhcp pool VLAN10
+Switch(dhcp-config)# network 192.168.10.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.10.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+-> DHCP configuration for VLAN 20
+Switch(config)# ip dhcp pool VLAN20
+Switch(dhcp-config)# network 192.168.20.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.20.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+-> DHCP configuration for VLAN 30
+Switch(config)# ip dhcp pool VLAN1
+Switch(dhcp-config)# network 192.168.30.0 255.255.255.0
+Switch(dhcp-config)# default-router 192.168.30.1
+Switch(dhcp-config)# dns-serve 8.8.8.8
+Switch(dhcp-config)# exit
+
+
+
+
+------- Remote Access ------(Telnet and ssh)
+
+-- Configure telnet
+Router(config)# line vty 0 ?           (go to virtual terminal)
+This will show how many people can login at the same time
+
+Router(config)# line vty 0 2       (0-2 means 3 people can login at same time)
+Router(config-line)# password telnet 123
+Router(config-line)# login
+
+Router(config-line)# transport input telnet
+(all- can remote router using telnet and ssh both)
+(telnet- can remote router using telnet only)
+(ssh- can remote router using  ssh only)
+
+Router(config-line)# exit
+
+
+** on pc
+telnet/ssh clinet -> select the protocol(telent or ssh) and add the ip address of router -> connect
+
+
+** Telnet using username
+Router(config)# username user1 secret pasword1
+Router(config)# line vty 0 2
+Router(config-line)# login local
+Router(config-line)# exit
+
+
+** Configure ssh on router
+Router(config)#hostname Core-Router
+Core-Router(config)# ip domain-name agunacourse.com
+Core-Router(config)# crypto key generate rsa
+Core-Router(config)# line vty 0 2
+Core-Router(config-line)# transport input ssh
+Core-Router(config-line)# exit
+
+
+
+
+----VTP----
+
+Configure the VTP
+
+- We have 4 switches connected to each other and their connecting interface is configured as trunk.
+- We have three mode in VTP name serve, transparent and client
+- We will configure SW1 as client, SW2 as transparent, SW3 as client and SW4 as server
+- we can have multiple server VTP in a single topology
+
+
+--> configure VTP on SW1
+Switch(config)# vtp mode server
+Switch(config)# vtp domain AGUNACOURSE    -(domain main must be same on all switch)
+Switch(config)# vtp password 123          -(password must also be same)
+
+--> configure VTP on SW2
+Switch(config)# vtp mode transparent
+Switch(config)# vtp domain AGUNACOURSE
+Switch(config)# vtp password 123
+
+-- configure VTP on SW3
+Switch(config)# vtp mode client
+Switch(config)# vtp domain AUGANACOURSE
+Switch(config)# vtp password 123
+
+-- configure VTP on SW4
+Switch(config)# vtp mode server
+Switch(config)# vtp domain AUGANACOURSE
+Switch(config)# vtp password 123
+
+
+-- Testing VTP
+-> Create VLAN on VTP serve
+Whatever the VLAN we will create on SW1 that is VTP serve those VLAN will also we get created for SW3(client) and SW4(server)
+--> In VTP client we cannot do modification, we cannot create and remove the vlan in VTP client.
+--> VTP transparent do not follow VTP server configurations or modifications
+
+
+
+---- Port Security-----
+
+--> configure port security on interface fa0/1 which is connected to server
+Switch(config)# int fa0/1
+Switch(config-if)# do show fa0/1 switchport
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport port-security
+
+#now register the mac address of the server which is allowed to send packets
+Switch(config-if)# switchport pot-security mac-address 00E0.B09A.213A
+
+#only 1 server or pc is allowed to connect to this port
+Switch(config-if)# switchport port-security maximum 1
+
+#configure the violation
+Switch(config-if)# switchport port-security violation ?
+Switch(config-if)# switchport port-security violation shutdown
+
+-- To see port-security status
+Switch(config)# do show port-security int fa0/1
+
+-- if the port is shutdown due to violation and we have to start it again, 'shutdown' it first and then use 'no shutdown' command
+-->Switch(config-if)# shutdown
+-->Switch(config-if)# no shutdown
+
+--> mac-address sticky - earlier we register the mac address manually, if we use mac-address sticky it will detect the first computer or server connected to the port
+Switch(config-if)# switchport pot-security mac-address sticky
+
+
+--> There are three violation mode that we have to configure
+1. shutdown 2. protect 3. restrict
+
+
+
+----- Etherchannel -----
+
+Combines 2 or more physical links into one logical link.
+Common protocols: PAgP (Cisco proprietary) and LACP (IEEE 802.3ad standard) and
+
+
+
+--- LACP ---
+--> Configure ethercahnnel on SW0:
+
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group ?
+Switch(config-if-range)# channel-group 1 ?
+Switch(config-if-range)# channel-group 1 mode ?
+Switch(config-if-range)# channel-group 1 mode active
+
+--> Configure etherchannel on SW1:
+
+Switch(config)# interface rangefa0/1-0/3
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group 1 mode passive
+
+NOte: - one active one passive ertherchannel is up
+      - both active etherchannel is also up
+      - both passive etherchannel is not up
+
+
+
+Switch(config-if-range)# do show etherchannel summary
+
+
+--- PAGP ----
+ 
+Note: - one desirable and one auto etherchanne up
+      - Both desirable etherchannel is up
+      - Both auto etherchannel is not up
+
+--> configure EtherChannel on SW1
+
+Switch(config)# interface range fa0/5-0/7
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group ?
+Switch(config-if-range)# channel-group 2 mode ?
+Switch(config-if-range)# channel-group 2 mode desirable
+
+--> configure EtherChannel on SW2(multilayer switch)
+
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# switchport trunk encapsulation dot1q
+Switch(config-if-range)# switchport mode trunk
+Switch(config-if-range)# channel-group 2 mode auto
+
+
+Switch(config-if-range)# do show etherchannel summary
+
+
+
+---- EtherChannel layer 3 ------
+
+Works on layer 3 switches only. Lets see we have two layer 3 switches connected
+
+SW1:
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# no switchport
+Switch(config-if-range)# channel-group 1 mode ?
+Switch(config-if-range)# channel-group 1 mode on
+Switch(config-if-range)# int po1
+Switch(config-if)# ip address 10.10.10.1 255.255.255.0
+
+SW2:
+Switch(config)# interface range fa0/1-0/3
+Switch(config-if-range)# no switchport
+Switch(config-if-range)# channel-group 1 mode ?
+Switch(config-if-range)# channel-group 1 mode on
+Switch(config-if-range)# int po1
+Switch(config-if)# ip address 10.10.10.2 255.255.255.0
+
+ 
+Switch(config-if)# do show etherchannel summary
+
+
+
+------ Static Routing -------
+
+-->Routing: Communication between computer in different block subnet
+
+--> Static routing is when you manually configure routes on routers to tell them how to reach different networks.
+
+
+
+--> Scenario: Two Routers and Two PCs
+
+Imagine:
+
+PC1 is on network 192.168.1.0/24
+IP: 192.168.1.10
+Default Gateway: 192.168.1.1 (Router1’s interface IP)
+
+PC2 is on network 192.168.3.0/24
+IP: 192.168.3.10
+Default Gateway: 192.168.3.1 (Router2’s interface IP)
+
+Router1 connects PC1's network and Router2.
+Interfaces:
+-- 192.168.1.1/24 (connected to PC1’s network)
+-- 10.0.0.1/30 (connected to Router2)
+
+Router2 connects PC2's network and Router1.
+Interfaces:
+-- 192.168.3.1/24 (connected to PC2’s network)
+-- 10.0.0.2/30 (connected to Router1)
+
+
+Step 1: Configure IP addresses on routers
+
+--> Router 1-
+
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+
+--> Router 2
+
+interface GigabitEthernet0/0
+ ip address 192.168.3.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+
+
+Step 2: Configure the static routes
+
+-->Router 1
+ip route 192.168.3.0 255.255.255.0 10.0.0.2
+
+--> Router 2
+ip route 192.168.1.0 255.255.255.0 10.0.0.1
+
+
+Step 3: Configure the PCs
+
+-- PC1 default gateway: 192.168.1.1
+-- PC2 default gateway: 192.168.3.1
+
+
+--> How it works:
+
+- When PC1 sends a packet to PC2 (192.168.3.10), it sends it to Router1 (192.168.1.1).
+
+- Router1 looks up its routing table, finds the route for 192.168.3.0/24 via 10.0.0.2 and forwards the packet.
+
+- Router2 receives it on 10.0.0.2, forwards it to PC2 (192.168.3.10).
+
+- The reply goes back the same way.
+
+
+-- to check the routing
+do show ip route
+
+
+
+---- Configuring static routing with 3 routers and 3 PCs ---
+
+Device	Interface	IP Address	Subnet
+PC1	NIC	192.168.1.10	255.255.255.0
+Router1	LAN to PC1	192.168.1.1	255.255.255.0
+Router1	WAN to Router2	10.0.0.1	255.255.255.252
+
+| PC2 | NIC | 192.168.2.10 | 255.255.255.0 |
+| Router2 | LAN to PC2 | 192.168.2.1 | 255.255.255.0 |
+| Router2 | WAN to Router1 | 10.0.0.2 | 255.255.255.252|
+| Router2 | WAN to Router3 | 10.0.0.5 | 255.255.255.252|
+
+| PC3 | NIC | 192.168.3.10 | 255.255.255.0 |
+| Router3 | LAN to PC3 | 192.168.3.1 | 255.255.255.0 |
+| Router3 | WAN to Router2 | 10.0.0.6 | 255.255.255.252|
+
+
+Step 1: Configure PCs
+
+--> Set IP addresses and default gateways:
+
+PC1:
+IP: 192.168.1.10
+GW: 192.168.1.1
+
+PC2:
+IP: 192.168.2.10
+GW: 192.168.2.1
+
+PC3:
+IP: 192.168.3.10
+GW: 192.168.3.1
+
+
+Step 2: Configures Routers
+
+--> Router 1
+
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.1 255.255.255.252
+ no shutdown
+
+ip route 192.168.2.0 255.255.255.0 10.0.0.2
+ip route 192.168.3.0 255.255.255.0 10.0.0.2
+
+
+--> Router 2
+
+interface GigabitEthernet0/0
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.2 255.255.255.252
+ no shutdown
+
+interface GigabitEthernet0/2
+ ip address 10.0.0.5 255.255.255.252
+ no shutdown
+
+ip route 192.168.1.0 255.255.255.0 10.0.0.1
+ip route 192.168.3.0 255.255.255.0 10.0.0.6
+
+
+--> Router 3
+
+interface GigabitEthernet0/0
+ ip address 192.168.3.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.0.0.6 255.255.255.252
+ no shutdown
+
+ip route 192.168.1.0 255.255.255.0 10.0.0.5
+ip route 192.168.2.0 255.255.255.0 10.0.0.5
+
+-->  Verify Connectivity by ping IP addresses of PCs
+
+
+
+
+------- Dynamic Routing EIGRP -------
+
+-- EIGRP stands for Enhanced Interior Gateway Routing Protocol.
+
+-- Dynamic routing is a method where routers automatically learn and share routes with each other. Routers use routing protocols to exchange information about network topology.
+
+-- How EIGRP Works (Simplified):
+⦁	Neighbor Discovery: Routers discover adjacent routers running EIGRP.
+⦁	Exchange Routing Information: Share routes using reliable transport.
+⦁	Calculate Best Paths: Use metrics based on bandwidth, delay, load, reliability.
+⦁	Maintain Routing Table: Update dynamically as the network changes.
+
+
+---- Dynamic Routing in 2 router topology ----
+
+
+Device	Interface	IP Address	Subnet Mask
+PC1	NIC	192.168.1.2	255.255.255.0
+R1	f0/0	192.168.1.1	255.255.255.0
+R1	f0/1	10.10.10.1	255.255.255.0
+R2	f0/1	10.10.10.2	255.255.255.0
+R2	f0/0	192.168.2.1	255.255.255.0
+PC2	NIC	192.168.2.2	255.255.255.0
+
+Step 1: Set IPs on PCs
+
+--> PC1:
+ 	IP Address: 192.168.1.2
+ 	Subnet Mask: 255.255.255.0
+ 	Default Gateway: 192.168.1.1
+
+--> PC2:
+ 	IP Address: 192.168.2.2
+ 	Subnet Mask: 255.255.255.0
+ 	Default Gateway: 192.168.2.1
+
+
+Step 2: Router configurations
+
+--> Router 1:
+ 	enable
+ 	configure terminal
+
+ 	interface f0/0
+ 	no shutdown
+ 	ip address 192.168.1.1 255.255.255.0
+ 
+ 	interface f0/1
+ 	no shutdown
+ 	ip address 10.10.10.1 255.255.255.0
+
+ 	router eigrp ?
+
+note: EIGRP Autonomous System (AS) number must be the same on both routers. Here we use 10.
+ 	router eigrp 10
+ 	network 10.10.10.0     # ADVERTISE CONNECTED NETWORKS
+ 	network 192.168.1.0
+
+
+--> Router 2:
+ 	enable
+ 	configure terminal
+
+ 	interface f0/0
+ 	no shutdown
+ 	ip address 192.168.2.1 255.255.255.0
+ 
+ 	interface f0/1
+ 	no shutdown
+ 	ip address 10.10.10.2 255.255.255.0
+
+ 	router eigrp ?
+ 	router eigrp 10
+ 	network 10.10.10.0
+ 	network 192.168.2.0
+
+
+do show ip eigrp neighbor    -- verify eigrp
+do ip route 		     -- check routing table
+
+
+
+---- Dynamic Routing in 3 router topology ----
+
+IP address scheme:
+
+PC1 (to R1)	192.168.1.2	255.255.255.0
+R1 (to PC1)	192.168.1.1	255.255.255.0
+R1 (to R2)	10.10.10.1	255.255.255.0
+R2 (to R1)	10.10.10.2	255.255.255.0
+R2 (to PC2)	192.168.2.1	255.255.255.0
+PC2 (to R2)	192.168.2.2	255.255.255.0
+R2 (to R3)	10.20.20.1	255.255.255.0
+R3 (to R2)	10.20.20.2	255.255.255.0
+R3 (to PC3)	192.168.3.1	255.255.255.0
+PC3 (to R3)	192.168.3.2	255.255.255.0
+
+Note: We have already configure R1 and R2 eigrp in above configuration, but we have introduce new network in router 2 so we have to advertise them and we still have to configure router 3 eigrp and advertise the network, no need to configure the router 1 eigrp cause we did not introduce any new network in it
+
+ --> Advertise router 2 new network
+router eigrp 10
+network 10.20.20.1
+
+--> Configure and advertise router 3 networks:
+ 	enable
+ 	configure terminal
+
+ 	interface f0/0
+ 	no shutdown
+ 	ip address 192.168.3.1 255.255.255.0
+ 
+ 	interface f0/1
+ 	no shutdown
+ 	ip address 10.20.20.2 255.255.255.0
+
+ 	router eigrp ?
+ 	router eigrp 10
+ 	network 10.20.20.0
+ 	network 192.168.3.0
+
+
+PC 3:
+IP address - 198.162.3.2
+Subnet mask - 255.255.255.0
+Default gateway - 192.168.3.1
+
+-- Verification (on all routers)
+show ip route
+show ip eigrp neighbors
+show ip protocols
+
+
+
+
+----------- Dynamic Routing OSPF ---------
+
+
+---- For 2 routers and 2 PCs topology------
+PC1	NIC	192.168.1.2	255.255.255.0
+R1	f0/0	192.168.1.1	255.255.255.0
+R1	f0/1	10.10.10.1	255.255.255.0
+R2	f0/1	10.10.10.2	255.255.255.0
+R2	f0/0	192.168.2.1	255.255.255.0
+PC2	NIC	192.168.2.2	255.255.255.0
+
+Router 1:
+
+ 	interface f0/0
+ 	ip address 192.168.1.1 255.255.255.0
+ 	no shutdown
+
+ 	interface GigabitEthernet0/1
+ 	ip address 10.10.10.1 255.255.255.252
+ 	no shutdown
+
+ 	router ospf 1
+ 	network 192.168.1.0 0.0.0.255 area 0
+ 	network 10.10.10.0 0.0.0.255 area 0
+
+
+Router 2:
+
+ 	interface f0/0
+ 	ip address 192.168.2.1 255.255.255.0
+ 	no shutdown
+
+ 	interface f0/1
+ 	ip address 10.10.10.2 255.255.255.252
+ 	no shutdown
+
+ 	router ospf 1
+ 	network 192.168.2.0 0.0.0.255 area 0
+ 	network 10.10.10.0 0.0.0.255 area 0
+
+
+PC1:
+IP 192.168.1.2
+Subnet 255.255.255.0,
+Gateway 192.168.1.1
+
+PC2:
+IP 192.168.2.2
+Subnet 255.255.255.0
+Gateway 192.168.2.1
+
+
+-- Verification commands on routers
+ 	show ip ospf neighbor
+ 	show ip route ospf
+ 	show ip protocols
+
+
+---- For 3 routers and 3 PCs topology ----
+
+-- Same we did for eigrp, we will be introducing new network in router 2 so we have to advertised them after that we will have to configure the router 3 and pc 3 and advertise the networks in router 3. (Use the same IP address scheme used in EIGRP configuration.)
+
+
+
+
+---------- Dynamic Routing BGP -------------
+
+
+--- For 2 routers and 2 PCs ---
+
+| Device      | Interface | IP Address  | Subnet Mask     |
+| ----------- | --------- | ----------- | --------------- |
+| PC1         | NIC       | 192.168.1.2 | 255.255.255.0   |
+| R1 (to PC1) | f0/0      | 192.168.1.1 | 255.255.255.0   |
+| R1 (to R2)  | f0/1      | 10.10.10.1  | 255.255.255.0   |
+| R2 (to R1)  | f0/1      | 10.10.10.2  | 255.255.255.0   |
+| R2 (to PC2) | f0/0      | 192.168.2.1 | 255.255.255.0   |
+| PC2         | NIC       | 192.168.2.2 | 255.255.255.0   |
+
+Assume AS numbers:
+R1 : As 65001
+R2 : AS 65002
+
+Router 1:
+
+ 	enable
+ 	configure terminal
+
+ 	interface f0/0
+ 	ip address 192.168.1.1 255.255.255.0
+ 	no shutdown
+
+ 	interface f/1
+ 	ip address 10.10.10.1 255.255.255.0
+ 	no shutdown
+
+ 	router bgp 65001
+ 	neighbor 10.10.10.2 remote-as 65002
+
+ 	network 192.168.1.0 mask 255.255.255.0     # Advertised the network
+ 	network 10.10.10.0 mask 255.255.255.0
+
+
+Router 2:
+
+ 	interface f0/0
+ 	ip address 192.168.2.1 255.255.255.0
+ 	no shutdown
+
+ 	interface f0/1
+ 	ip address 10.10.10.2 255.255.255.0
+ 	no shutdown
+
+ 	router bgp 65002
+ 	neighbor 10.10.10.1 remote-as 65001
+
+ 	network 192.168.2.0 mask 255.255.255.0
+ 	network 10.10.10.0 mask 255.255.255.0
+
+
+PC Configurations:
+
+PC1:
+IP 192.168.1.2,
+subnet 255.255.255.0,43
+gateway 192.168.1.1
+
+PC2:
+IP 192.168.2.2,
+subnet 255.255.255.0,
+gateway 192.168.2.1
+
+
+Verification:
+ 	show ip bgp summary
+ 	show ip bgp
+ 	show ip route bgp
+
+
+
+--- for 3 routers and 3 PCs topology ---
+
+| Device      | Interface | IP Address  | Subnet Mask   |
+| ----------- | --------- | ----------- | ------------- |
+| PC1         | -         | 192.168.1.2 | 255.255.255.0 |
+| R1 (to PC1) | Gi0/0     | 192.168.1.1 | 255.255.255.0 |
+| R1 (to R2)  | Gi0/1     | 10.10.10.1  | 255.255.255.0 |
+| R2 (to R1)  | Gi0/1     | 10.10.10.2  | 255.255.255.0 |
+| R2 (to PC2) | Gi0/0     | 192.168.2.1 | 255.255.255.0 |
+| PC2         | -         | 192.168.2.2 | 255.255.255.0 |
+| R2 (to R3)  | Gi0/2     | 10.20.20.1  | 255.255.255.0 |
+| R3 (to R2)  | Gi0/1     | 10.20.20.2  | 255.255.255.0 |
+| R3 (to PC3) | Gi0/0     | 192.168.3.1 | 255.255.255.0 |
+| PC3         | -         | 192.168.3.2 | 255.255.255.0 |
+
+⦁	We have already configure bgp for router 1
+⦁	Introduce new network in router 2 so we have to configure bgp
+ 	router bgp 65002
+ 	neighbour 10.20.20.2 remote-as 65003
+⦁	Router 3 we have added so we have to configure it
+ 	interface f0/0
+ 	ip address 192.168.3.1 255.255.255.0
+ 	no shutdown
+
+ 	interface f0/1
+ 	ip address 10.20.20.2 255.255.255.0
+ 	no shutdown
+
+ 	router bgp 65003
+ 	neighbor 10.20.20.1 remote-as 65002
+
+ 	network 192.168.3.0 mask 255.255.255.0    # advertised the network
+ 	network 192.20.20.0 mask 255.255.255.0
+
+PC3:
+IP 192.168.3.2,
+mask 255.255.255.0,
+gateway 192.168.3.1
+
+
+
+
+------------- Standard Access List ---------- (imp for practical)
+
+An Access Control List (ACL) is a set of rules used in networking (especially in routers and firewalls) to control and filter network traffic. It defines which packets are allowed or denied based on criteria like IP addresses, protocols, or ports.
+
+--> Standard Access List:
+
+A Standard Access Control List filters traffic only based on the source IP address.
+It does not check the destination IP, protocol, or port number.
+
+⦁	Uses numbers 1–99 (or 1300–1999 for expanded range).
+
+⦁	Can only permit or deny traffic based on the source IP address.
+
+⦁	Applied close to the destination (since it lacks granularity).
+
+
+--> Wildcard Mask
+
+Standard ACLs use a wildcard mask to match IP addresses:
+
+| Wildcard Mask     | Means                                             |
+| ----------------- | ------------------------------------------------- |
+| `0.0.0.0`         | Exact match                                       |
+| `0.0.0.255`       | Match a range (e.g., 192.168.1.0 – 192.168.1.255) |
+| `255.255.255.255` | Match all IPs                                     |
+
+
+Configuration:
+
+Router(config)# access-list?
+Router(config)# access-list 1 ?
+Router(config)# access-list 1 deny?
+Router(config)# access-list 1 deny host 192.168.20.2   # will block this pc only
+
+# block any network or VLAN
+Router(config)# access-list 1 deny 192.168.20.0 0.0.0.255
+
+Router(config)# do show access-list
+
+-- now vlan 20 is block we have to now permit rest of the vlan
+Router(config)# access-list 1 permit any
+
+
+-- now if we check access-list (do show access-list) we will see two rules in access-list 1
+
+-- now assign the access-list to router interface (either in or out)
+Router(config)# int f0/0
+Router(config-if)# ip access-group 1 ?
+Router(config-if)# ip access-group 1 out
+
+
+---  remove access-group
+Router(config)# int fa0/0
+Router(config-if)# no ip access-group 1 out
+
+
+## See running configurations
+---->Router(config)# show run
+
+
+-- Sequence number in Access list
+Router will read the access rule according to the sequence
+
+Router(config)# ip access-list standard 1 -- go to access list
+Router(config-std-nac1)# no 30     -- remove rule with sequence number 30
+
+Router(config-std-nac1)# 15 deny host 192.168.10.2  -- add rule with sequence no. 15
+
+
+-- configure named access-list(use name instead of access id)
+
+Router(config)# ip access-list standard PermitVLAN30
+Router(config)# ?
+Router(config-std-nacl)# permit 192.168.30.0 0.0.0.255
+Router(config-std-nacl)# do show access list
+
+# Now assign the access list to the interface
+Router(config-std-nacl)# int fa0/0
+Router(config-if)# ip access-group PermitVLAN30 out
+
+
+
+---------- Extended Access List ---------
+
+--> An Extended Access Control List (Extended ACL) is a more powerful and flexible type of ACL used in networking.
+It allows you to filter traffic based on multiple parameters, not just the source IP.
+
+--> Extended ACL Filters Based On:
+
+⦁	Source IP address
+⦁	Destination IP address
+⦁	Protocol type (TCP, UDP, ICMP, etc.)
+⦁	Port numbers (e.g., HTTP, FTP, SSH)
+⦁	Source and destination ports.
+
+1.	Block all http to all servers
+
+Router(config)# access-list ?
+Router(config)# access-list 100 deny tcp any 192.168.1.0 0.0.0.255 ?
+Router(config)# access-list 100 deny tcp any 192.168.1.0 0.0.0.255 eq 80
+
+(access-list 100 deny tcp any 192.168.1.0 0.0.0.255 eq 80)
+(access-list 100 deny protocol any  destination-server eq  port-of-http)
+ 
+2. All VLAN is allowed to access Server1
+
+Router(config)# access-list 100 permit ?
+Router(config)# access-list 100 permit ip ?
+Router(config)# access list 100 permit ip any ?
+Router(config)# access list 100 permit ip any host 192.168.1.103
+
+3. Only VLAN 20 can access Server2
+
+Router(config)#  access-list 100 permit ip 192.168.20.0 0.0.0.255(source) host 192.168.1.20(destination)
+
+4. only VLAN 30 can access server3
+
+Router(config)# access-list 100 permit ip 192.168.30.0 0.0.0.255 host 192.168.1.30
+
+
+Router(config)# do show access list
+
+-- Assign access list to interface
+Router(config)# int fa0/1
+Router(config-if)# ip access-group 100 out
+
+
+
+
+--------------- Network Address Translation -----------------
+
+--> Network Address Translation (NAT) is a technique used in networking to translate private IP addresses to a public IP address (and vice versa) so that devices on a private network can communicate with external networks like the internet.
+
+--> How NAT Works:
+
+1.	Your device (e.g., 192.168.1.10) sends a request to a website.
+2.	The NAT-enabled router replaces the private IP with its public IP (e.g., 203.0.113.5).
+3.	The website responds to the public IP.
+4.	The router receives the response, translates the public IP back to your private IP, and delivers the data to your device.
+
+
+--> Types of NAT:
+
+⦁	Static NAT:
+ 	One private IP is mapped to one public IP (1:1 mapping).
+
+⦁	Dynamic NAT
+ 	Private IPs are mapped to a pool of public IPs, assigned as available.
+
+⦁	PAT (Port Address Translation)
+ 	Many private IPs share one public IP, but use different ports. Also called 	NAT Overload. Most common in home routers.
+
+
+Configure the default route:
+-- on costumer router where the next hop is ISP
+Router(config)# Ip route 0.0.0.0 0.0.0.0 10.20.20.1
+
+
+Configure NAT on customer router (eg. home router)
+
+Router(config)# access-list 1 permit 192.168.10.0 0.0.0.255   #VLAN10
+Router(config)# access-list 1 permit 192.168.20.0 0.0.0.255   #VLAN20
+
+Router(config)# ip nat inside source list 1 interface fa0/0 overload
+
+Router(config)# Int fa0/0
+Router(config-if)# ip nat outside    # from route to ISP
+
+Router(config-if)# int fa0/1.10
+Router(config-if)# ip nat inside
+
+Router(config-if)# int fa0/1.20
+Router(config-if)# ip nat inside

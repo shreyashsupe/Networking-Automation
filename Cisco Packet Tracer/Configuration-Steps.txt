@@ -1,0 +1,14 @@
+## DHCP SERVER CONFIGURATION
+
+Configuring the DHCP Server.
+DHCP Server > Services > DHCP. Now we have to choose the IP Range for this server, let's take Network ID 192.168.1.0
+Now here are some IPs to be followed - Network ID - 192.168.1.0, Default Gateway - 192.168.1.1, Subnet Mask - 255.255.255.0, IP Address Range - 192.168.1.0 - 192.168.1.255, Usable IP Address Range - 192.168.1.1 - 192.168.1.254, Total Hosts - 256, Usable Hosts - 254
+
+Now we have gathered all the Information required to configure DHCP Server. So follow the steps
+In DHCP Tab you will find Pool Name, enter the desired pool name
+Next is Default Gateway, fill 192.168.1.1
+Next is DNS Server, it is IP of server itself 192.168.1.1, here default gateway and server's IP are same.
+Next is starting IP address, fill 192.168.1.2
+Next is Subnet Mask, fill 255.255.255.0 which is default subnet mask of Class C IP
+Next is Maximum users, fill by your requirements, example 32
+Click on add to add this IP range into the Server's IP Pool.

@@ -57,26 +57,6 @@ The network includes:
 11. **Default Static Routes** – Configured for redundancy (primary + backup)  
 12. **Verification** – Using `ping`, `traceroute`, `show` commands  
 
----
-
-## Sample Commands
-
-### 🔹 Access Layer (Sales Switch)
-```bash
-hostname Sales-SW
-vlan 10
-name Sales
-int range fa0/3-24
- switchport mode access
- switchport access vlan 10
-int range fa0/1-2
- switchport mode trunk
 
 
-### 🔹 Distribution Layer (Finance Switch – Port Security)
-```bash
-int range fa0/3-24
- switchport port-security
- switchport port-security maximum 1
- switchport port-security mac-address sticky
- switchport port-security violation shutdown
+

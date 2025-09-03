@@ -7,7 +7,7 @@ The goal is to save time, reduce manual errors, and make network administration 
 ---
 
 ### 1. [dhcp_configuration.py](./dhcp_configuration.py)
-This script automates the process of configuring **DHCP (Dynamic Host Configuration Protocol)** on Cisco routers or switches.  
+This script automates the process of configuring **DHCP (Dynamic Host Configuration Protocol)** on Cisco routers.  
 It connects to the device via SSH, applies DHCP pool configurations, sets default gateways, and assigns IP ranges automatically.  
 The script ensures that devices in the network can receive IP addresses dynamically without manual configuration.  
 Useful for **large-scale enterprise networks** where managing IP assignments manually would be time-consuming.  

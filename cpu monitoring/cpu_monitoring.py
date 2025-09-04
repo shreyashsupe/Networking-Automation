@@ -2,6 +2,7 @@ import psutil
 from plyer import notification # type: ignore
 import time
 import logging
+import platform
 from datetime import datetime
 
 # CPU usage threshold
@@ -17,19 +18,27 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
+# Detect OS
+OS_NAME = platform.system()
+
 
 def send_alert(usage):
     """Send a notification when CPU crosses threshold"""
-    notification.notify(
-        title="High CPU Usage Alert",
-        message=f"CPU usage is {usage}%",
-        timeout=5
-    )
+    msg = f"CPU usage is {usage}%"
+    try:
+        notification.notify(
+            title="High CPU Usage Alert",
+            message=f"CPU usage is {usage}%",
+            timeout=5
+        )
+    except Exception:
+        print(f"[ALERT] {msg}")    # Fallback for headless Linux
+    logging.warning(msg)
 
 
 def monitor_cpu():
-    print(f"Starting CPU monitoring...\nThreshold = {THRESHOLD}% | Interval = {CHECK_INTERVAL} sec")
-    logging.info("CPU monitoring started.")
+    print(f"Starting CPU monitoring on {OS_NAME}...\nThreshold = {THRESHOLD}% | Interval = {CHECK_INTERVAL} sec")
+    logging.info(f"CPU monitoring started on {OS_NAME}.")
 
     try:
         while True:

@@ -1012,6 +1012,85 @@ IP 192.168.3.2,
 mask 255.255.255.0,
 gateway 192.168.3.1
 
+--------------complete bgp configuration for 3 router and 3 pcs topology---------------------
+
+Router 1:
+
+enable
+configure terminal
+
+! Assign interfaces
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/1
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+
+! BGP Configuration
+router bgp 65001
+ bgp log-neighbor-changes
+ network 192.168.1.0 mask 255.255.255.0
+ network 10.10.10.0 mask 255.255.255.0
+ neighbor 10.10.10.2 remote-as 65002
+end
+write
+
+
+Router 2:
+
+enable
+configure terminal
+
+! Assign interfaces
+interface GigabitEthernet0/1
+ ip address 10.10.10.2 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/0
+ ip address 192.168.2.1 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/2
+ ip address 10.20.20.1 255.255.255.0
+ no shutdown
+
+! BGP Configuration
+router bgp 65002
+ bgp log-neighbor-changes
+ network 192.168.2.0 mask 255.255.255.0
+ network 10.10.10.0 mask 255.255.255.0
+ network 10.20.20.0 mask 255.255.255.0
+ neighbor 10.10.10.1 remote-as 65001
+ neighbor 10.20.20.2 remote-as 65003
+end
+write
+
+
+Router 3:
+
+enable
+configure terminal
+
+! Assign interfaces
+interface GigabitEthernet0/1
+ ip address 10.20.20.2 255.255.255.0
+ no shutdown
+
+interface GigabitEthernet0/0
+ ip address 192.168.3.1 255.255.255.0
+ no shutdown
+
+! BGP Configuration
+router bgp 65003
+ bgp log-neighbor-changes
+ network 192.168.3.0 mask 255.255.255.0
+ network 10.20.20.0 mask 255.255.255.0
+ neighbor 10.20.20.1 remote-as 65002
+end
+write
+
 
 
 
